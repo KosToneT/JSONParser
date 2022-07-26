@@ -1,26 +1,32 @@
 import java.util.LinkedList;
 
 public class JSONParse{
-    static class JSONPair{
+    public static class JSONPair{
         String key;
         JSONValue value;
         public JSONPair(String key, JSONValue value){
             this.key = key;
             this.value = value;
         }
+        public String getKey(){
+            return key;
+        }
+        public JSONValue getValue(){
+            return value;
+        }
         @Override
         public String toString(){
             return key+":"+value;
         }
 
-        static JSONPair parse(String JSON){
+       public static JSONPair parse(String JSON){
             String key = JSON.substring(0, JSON.indexOf(":"));
             JSONValue value = JSONValue.parse(JSON.substring(JSON.indexOf(":")+1));
             return new JSONPair(key, value);
         }
     }
 
-    static class JSONMembers{
+    public static class JSONMembers{
         LinkedList<JSONPair> members = new LinkedList<>(); 
         public JSONMembers(){}
         public JSONMembers(JSONPair...pair){
@@ -42,7 +48,15 @@ public class JSONParse{
         public void add(JSONPair pair){
             members.add(pair);
         }
-        static JSONMembers parse(String JSON){
+        public JSONPair get(int id){
+            return members.get(id);
+        }
+        public int size(){
+            return members.size();
+        }
+
+
+        public static JSONMembers parse(String JSON){
             JSONMembers jMembers = new JSONMembers();
             while(JSON.length()>0){
                 if(JSON.charAt(0)==','){
@@ -58,13 +72,19 @@ public class JSONParse{
     }
 
 
-    static class JSONElements{
+    public static class JSONElements{
         LinkedList<JSONValue> elements = new LinkedList<>(); 
         public JSONElements(){}
         public JSONElements(JSONValue...elements){
             for(JSONValue i:elements){
                 this.elements.add(i);
             }
+        }
+        public JSONValue get(int id){
+            return elements.get(id);
+        }
+        public int size(){
+            return elements.size();
         }
         @Override
         public String toString(){
@@ -96,13 +116,17 @@ public class JSONParse{
         }
     }
     
-    static class JSONValue<T>{
-        String type;
-        T value;
+    public static class JSONValue<T>{
+        public Class<?> type;
+        public T value;
         public JSONValue(T value){
             this.value = value;
-            this.type = value.getClass().getName();
+            this.type = value.getClass();
         }
+        public T get(Class<T> type){
+            return type.cast(value);
+        }
+
         @Override
         public String toString(){
             if(value.getClass().equals(String.class) ){
@@ -166,7 +190,7 @@ public class JSONParse{
         }
     }
    
-    static class JSONObject{
+    public static class JSONObject{
         JSONMembers jMembers;
         public JSONObject(JSONMembers jMembers){
             this.jMembers = jMembers;
@@ -195,7 +219,7 @@ public class JSONParse{
         public String toString(){
             return "{"+jMembers.toString()+"}";
         }
-        static JSONObject parse(String JSON){
+        public static JSONObject parse(String JSON){
             JSON = JSON.substring(1, findEnd(JSON, '{'));
             return new JSONObject(JSONMembers.parse(JSON));
         }
@@ -218,10 +242,15 @@ public class JSONParse{
             default:
                 break;
         }
+
         if(start_sym==end_sym){
             int begin=0;
             int end_pos=0;
             for (int i=0; i<str.length(); i++){
+                if(isSkipSymbol(str.charAt(i))){
+                    i++;
+                    continue;
+                }
                 if(str.charAt(i)==start_sym) begin++;    
                 if(begin>1){
                     end_pos= i;
@@ -232,7 +261,11 @@ public class JSONParse{
         int begin=0;
         int end =0;
         int end_pos=0;
-        for (int i=0; i<str.length(); i++){
+        for (int i=0; i<str.length(); i++){   
+            if(isSkipSymbol(str.charAt(i))){
+                i++;
+                continue;
+            }
             if(str.charAt(i)==start_sym) begin++;
             if(str.charAt(i)==end_sym) end++;
 
@@ -243,8 +276,12 @@ public class JSONParse{
             }
         }
         return end_pos;
-
     }
+    private static boolean isSkipSymbol(char skipSym){
+        return skipSym=='\\';
+    }
+
+
     private static int findEnd(String str){
         int begin=0;
         int end =0;
@@ -262,7 +299,4 @@ public class JSONParse{
         return end_pos;
     }
 }
-
-
-
 
