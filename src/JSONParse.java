@@ -215,6 +215,23 @@ public class JSONParse{
         public int size(){
             return jMembers.members.size();
         }
+
+        public String getKeys(){
+            String str = "";
+            for (JSONPair i : jMembers.members) {
+                str += i.key + "\n";
+            }
+            return str;
+        }  
+        
+        public String getTypeWithKeys(){
+            String str = "";
+            for (JSONPair i : jMembers.members) {
+                str += "key = "+ i.key + " type = " + i.value.type.getSimpleName() + "\n";
+            }
+            return str;
+        }  
+
         @Override
         public String toString(){
             return "{"+jMembers.toString()+"}";
@@ -226,26 +243,11 @@ public class JSONParse{
     }
 
     private static int findEnd(String str, char start_sym){
-        char end_sym=0;
-        switch (start_sym){
-            case '{':
-                return findEnd(str);
-            case '"':
-                end_sym = '"';
-                break;
-            case '[':
-                end_sym = ']';
-                break;
-            case '\'':
-                end_sym = '\'';
-                break;
-            default:
-                break;
-        }
-
-        if(start_sym==end_sym){
-            int begin=0;
-            int end_pos=0;
+        int begin = 0;
+        int end = 0;
+        int end_pos = 0;
+        char end_sym = getEndSymbol(start_sym);
+        if(start_sym == end_sym){
             for (int i=0; i<str.length(); i++){
                 if(isSkipSymbol(str.charAt(i))){
                     i++;
@@ -258,9 +260,6 @@ public class JSONParse{
                 }
             }
         }
-        int begin=0;
-        int end =0;
-        int end_pos=0;
         for (int i=0; i<str.length(); i++){   
             if(isSkipSymbol(str.charAt(i))){
                 i++;
@@ -268,35 +267,31 @@ public class JSONParse{
             }
             if(str.charAt(i)==start_sym) begin++;
             if(str.charAt(i)==end_sym) end++;
-
             if((begin == end)&&(end!=0)){
-                end_pos= i;
+                end_pos = i;
                 break;
-
             }
         }
         return end_pos;
     }
+
     private static boolean isSkipSymbol(char skipSym){
         return skipSym=='\\';
     }
-
-
-    private static int findEnd(String str){
-        int begin=0;
-        int end =0;
-        int end_pos=0;
-        for (int i=0; i<str.length(); i++){
-            if(str.charAt(i)=='{') begin++;
-            if(str.charAt(i)=='}') end++;
-
-            if(begin == end&& end!=0){
-                end_pos= i;
-                break;
-                
-            }
+    
+    private static char getEndSymbol(char startSym){
+        switch (startSym){
+            case '{':
+                return '}';
+            case '"':
+                return '"';
+            case '[':
+                return ']';
+            case '\'':
+                return '\'';
+            default:
+                return 0;
         }
-        return end_pos;
     }
 }
 
