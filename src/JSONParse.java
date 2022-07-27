@@ -1,6 +1,30 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 import java.util.LinkedList;
 
 public class JSONParse{
+    public static String sendRequests(String https){
+        try {
+            URL url = new URL(https);
+            HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            BufferedReader in;
+            try {
+                in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF8"));
+            } catch (Exception e) {
+                in = new BufferedReader(new InputStreamReader(urlConnection.getErrorStream(), "UTF8"));
+            }
+            String str[] ={""};
+            in.lines().forEach((s)->str[0]+=s);;
+            return str[0];
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return null;
+    }
+
     public static class JSONPair{
         String key;
         JSONValue value;
